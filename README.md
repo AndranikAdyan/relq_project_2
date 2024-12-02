@@ -3,6 +3,11 @@
 ## Table of Contents
 
 1. [OWASP Juice Shop Vulnerabilities](#1-owasp-juice-shop-vulnerabilities)
+	1. [SQL Injection](#1-sql-injection)
+	2. [Cross Site Scripting (XSS)](#2-cross-site-scripting-xss)
+	3. [Administration Panel](#3-administration-panel)
+	4. [Post a product review as another user](#4-post-a-product-review-as-another-user)
+	5. [View Another User's Shopping Basket](#5-view-another-users-shopping-basket)
 
 ---
 
