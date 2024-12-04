@@ -1,32 +1,8 @@
 from datetime import datetime
 
-def port_is_valid(ports: str) -> bool:
-	line_count = 0
-	for i in ports:
-		if i == '-':
-			line_count += 1
-		if not i.isdigit() and i != '-' and i != ',' or (line_count > 1):
-			return False
-	return True
-
-def parse_ports(ports: str) -> list:
-	if not port_is_valid(ports):
-		print("Invalid argument for -p")
-		exit (1)
-	if ports == '-':
-		return [i for i in range(1, 65536)]
-	if '-' in ports:
-		nums = ports.split('-')
-		return [i for i in range(int(nums[0]), int(nums[1]) + 1)]
-	if ',' in ports:
-		ports_arr = ports.split(',')
-		ports_arr = list(map(lambda s: int(s), ports_arr))
-		return ports_arr
-	return [int(ports)]
-
-def print_info(ip: str) -> None:
+def print_info(host: str) -> None:
 	print(f"Starting scanning at {datetime.now().strftime("%Y-%m-%d %H:%M")}")
-	print(f"Nmap scan report for {ip}")
+	print(f"Nmap scan report for {host}")
 
 def get_service(port: int, protocol: str) -> str:
 	if protocol == "tcp":
@@ -37,25 +13,24 @@ def get_service(port: int, protocol: str) -> str:
 		return -1
 	for line in file:
 		if str(port) == line.split("\t")[1].split("/")[0]:
-			service = line.split("\t")[0]
-			break
-	else:
-		return "unknown"
+			file.close()
+			return line.split("\t")[0]
 	file.close()
-	return service
+	return "unknown"
 
 def print_connections(tcp_scan, udp_scan, args, tcp_ports, udp_ports) -> None:
 	if len(tcp_scan) != 0 or len(udp_scan) != 0:
 		print("PORT\tSTATE\tSERVICE")
+	scans_len = len(udp_scan) + len(tcp_scan)
 	for el in tcp_scan:
-		if "close" in el and len(el) <= 26:
+		if "close" in el and scans_len <= 26:
 			print(el)
-		else:
+		elif "close" not in el:
 			print(el)
 	for el in udp_scan:
-		if "close" in el and len(el) <= 26:
+		if "close" in el and scans_len <= 26:
 			print(el)
-		else:
+		elif "close" not in el:
 			print(el)
 	if args["sT"]:
 		print(f"Not shown: {len(args['p']) - tcp_ports} close tcp ports (no-response)")
