@@ -76,7 +76,7 @@ def parse_args(parser: object) -> dict:
 	try:
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.settimeout(1)
-		sock.connect((args["host"], 80))
+		sock.connect_ex((args["host"], 80))
 	except socket.gaierror:
 		print("Name or service not found")
 		exit(1)
