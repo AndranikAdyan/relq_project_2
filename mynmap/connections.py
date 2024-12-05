@@ -13,9 +13,6 @@ def check_tcp_connection(host: str, ports: list[int]) -> tuple[int, list[str]]:
 			service = utils.get_service(port, "tcp")
 			tcp_arr.append(f"{port}/tcp\topen\t{service}")
 			open_ports += 1
-		elif result == 110:
-			service = utils.get_service(port, "tcp")
-			tcp_arr.append(f"{port}/tcp\tfiltered\t{service}")
 		elif len(ports) <= 26:
 				service = utils.get_service(port, "tcp")
 				tcp_arr.append(f"{port}/tcp\tclose\t{service}")
@@ -49,7 +46,7 @@ def check_syn_connection(host: str, ports: list[int]) -> tuple[int, list[str]]:
 		tcp_syn = TCP(dport=port, flags='S')
 		syn_packet = ip_layer / tcp_syn
 
-		response = sr1(syn_packet, timeout=0.1)
+		response = sr1(syn_packet, timeout=0.5)
 		if response and response[TCP].flags == "SA" and response.haslayer(TCP):
 			open_ports += 1
 			service = utils.get_service(port, "tcp")

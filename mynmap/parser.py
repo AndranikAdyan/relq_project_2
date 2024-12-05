@@ -27,7 +27,6 @@ def port_is_valid(ports: str) -> bool:
 		for port in ports_arr:
 			if port < 1 or port > 65535:
 				return False
-
 	return True
 
 
@@ -50,10 +49,11 @@ def parse_args(parser: object) -> dict:
 	args = {
 		"sT":	True,
 		"sU":	False,
+		"sS":	False,
 		"p":	[],
 		"host":	""
 	}
-	parser.add_argument("-sT", action="store_false", help="TCP scan")
+	parser.add_argument("-sT", action="store_true", help="TCP scan")
 	parser.add_argument("-sU", action="store_true", help="UDP scan")
 	parser.add_argument("-sS", action="store_true", help="TCP SYN scan")
 	parser.add_argument("host", type=str, help="Target host")
@@ -63,12 +63,18 @@ def parse_args(parser: object) -> dict:
 	if argv.host == "":
 		print("Input host for scaning")
 		exit(1)
+	if argv.sS:
+		args["sS"] = True
+		args["sT"] = False
 	if argv.sU:
 		args["sU"] = True
-		args["sT"] = True
+		args["sT"] = False
 	if argv.sU and argv.sT:
 		args["sU"] = True
-		args["sT"] = False
+		args["sT"] = True
+	if argv.sS and argv.sT:
+		print("-sS and -sT can't be used togheter")
+		exit(1)
 
 	args["p"] = parse_ports(argv.port)
 	args["host"] = argv.host

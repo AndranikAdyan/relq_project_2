@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 import argparse
 import parser
@@ -16,6 +16,8 @@ def main():
 	utils.print_info(args["host"])
 	if args["sT"]:
 		tcp_open_ports, tcp_scan = connections.check_tcp_connection(args["host"], args["p"])
+	elif args["sS"]:
+		tcp_open_ports, tcp_scan = connections.check_syn_connection(args["host"], args["p"])
 	if args["sU"]:
 		udp_open_ports, udp_scan = connections.check_udp_connection(args["host"], args["p"])
 	utils.print_connections(tcp_scan, udp_scan, args, tcp_open_ports, udp_open_ports)
