@@ -51,14 +51,14 @@ def check_syn_connection(host: str, ports: list[int]) -> tuple[int, list[str]]:
 			if response and response[TCP].flags == "SA" and response.haslayer(TCP):
 				open_ports += 1
 				service = utils.get_service(port, "tcp")
-				syn_arr.append(f"{port}/udp\topen\t{service}")
+				syn_arr.append(f"{port}/tcp\topen\t{service}")
 
 				tcp_rst = TCP(dport=port, sport=response[TCP].sport, flags="R")
 				rst_packet = ip_layer / tcp_rst
 				send(rst_packet)
 			elif len(ports) <= 26:
-				service = utils.get_service(port, "udp")
-				syn_arr.append(f"{port}/udp\tclose\t{service}")
+				service = utils.get_service(port, "tcp")
+				syn_arr.append(f"{port}/tcp\tclose\t{service}")
 		return open_ports, syn_arr
 	except PermissionError:
 		print("\nOperation not permitted. Please run as root or with appropriate permissions.")
