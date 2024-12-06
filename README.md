@@ -11,6 +11,7 @@
 
 ### [2. Root Me](#2-root-me-1)
 
+### [3. Pickle Rick](#3-pickle-rick-1)
 
 ---
 
@@ -195,18 +196,17 @@ Connecting with ``Linux``:
 
 1. Download OpenVPN by running the following command in your terminal:
 
-    ```bash
-        sudo apt install
-        sudo apt install openvpn
-    ```
+	```bash
+	sudo apt install openvpn
+	```
 
 2. Locate the full path to your VPN configuration file (download from the [access](https://tryhackme.com/r/access) page), normally in your Downloads folder.
 
 3. Use your OpenVPN file with the following command: 
  
-    ```bash
-        sudo openvpn /path-to-file/file-name.ovpn
-    ```
+	```bash
+	sudo openvpn /path-to-file/file-name.ovpn
+	```
 
 4. If you see the "Initialization successfully completed" that's it! You should be successfully connected.
 
@@ -219,45 +219,43 @@ Start the machine to get the ip.
 
 ![setup](images/ip.png)
 
-
 - **Step 3:  Scanning the target NMAP**
 
 1. Let's use Nmap to see how many ports are open and what protocols are running on them.
 
 
-    ```bash
-        sudo nmap -sS -sV <target-IP>
-    ```
+	```bash
+	sudo nmap -sS -sV <target-IP>
+	```
 
-    `sudo` : Nmap requires root privileges to perform some advanced scans.
+	`sudo` : Nmap requires root privileges to perform some advanced scans.
 
-    `-sS` : Performs a TCP SYN scan, which is faster and less detectable.
+	`-sS` : Performs a TCP SYN scan, which is less detectable.
 
-    `-sV` : Detects service versions running on the open ports.
+	`-sV` : Detects service versions running on the open ports.
 
 ![setup](images/nmap.png)
 
 - **Step 4:  Scanning the target GoBuster**
 
-    `Gobuster`: Gobuster is a command-line tool used for brute-forcing URLs and directories on websites, as well as DNS subdomains. It helps security analysts discover hidden content by testing a list of possible names quickly.
+	`Gobuster`: Gobuster is a command-line tool used for brute-forcing URLs and directories on websites, as well as DNS subdomains. It helps security analysts discover hidden content by testing a list of possible names quickly.
 
-    ```bash
-        sudo apt install
-        sudo apt install gobuster
-    ```
+	```bash
+	sudo apt install gobuster
+	```
 
-    `Dirb`: Dirb is a web content scanner that searches for hidden directories and files on a web server by brute-forcing a wordlist. It helps identify potential entry points for further security testing.
+	`Dirb`: Dirb is a web content scanner that searches for hidden directories and files on a web server by brute-forcing a wordlist. It helps identify potential entry points for further security testing.
 
-    ```bash
-        sudo apt install dirb
-    ```
+	```bash
+	sudo apt install dirb
+	```
 
-    ```bash
-        gobuster -u 10.10.31.142 -w /usr/share/dirb/wordlists/small.txt
-    ```
-    `-u` 10.10.31.142: Specifies the target IP address.
+	```bash
+	gobuster -u 10.10.31.142 -w /usr/share/dirb/wordlists/small.txt
+	```
+	`-u` 10.10.31.142: Specifies the target IP address.
 
-    `-w` /usr/share/dirb/wordlists/small.txt: Uses a wordlist (small.txt) from Dirb’s collection to test for hidden directories.
+	`-w` /usr/share/dirb/wordlists/small.txt: Uses a wordlist (small.txt) from Dirb’s collection to test for hidden directories.
 
 ![setup](images/gobuster.png)
 
@@ -292,7 +290,7 @@ We should use the VPN IP to listen because we need to be on the same network. Si
 `nc`: (Netcat) is a command-line tool used for creating TCP/UDP connections and listening on ports. It is commonly used for tasks like transferring data or setting up reverse shells.
 
 ```bash
-    sudo nc -lvnp 86 -s 10.4.112.53
+sudo nc -lvnp 86 -s 10.4.112.53
 ```
 
 
@@ -312,9 +310,9 @@ We should use the VPN IP to listen because we need to be on the same network. Si
 
 ![setup](images/n2.png)
 
-Here we are in our Target shell! =D
+Here we are in our Target shell!
 
-`NOTE`: In reverse shell no tabs and arrows, they are not working! =D
+`NOTE`: In reverse shell no tabs and arrows, they are not working!
 
 ![setup](images/n3.png)
 
@@ -336,7 +334,7 @@ here is a usefull site for gtfobins: `https://gtfobins.github.io/`
 ![alt text](images/t.png)
 
 ```bash
-	python -c 'print(open("file_to_read").read())'
+python -c 'print(open("file_to_read").read())'
 ```
 
 ![alt text](images/r.png)
@@ -352,3 +350,129 @@ This Root Me CTF walkthrough offers a step-by-step guide for beginners to engage
 - `Scanning with Nmap and GoBuster`: These tools help identify open ports, services, and potential hidden directories on the target system.
 - `Reverse Shell Setup`: After uploading a reverse shell PHP script, the user listens for incoming connections using Netcat on their VPN IP.
 - `Privilege Escalation`: Once inside the shell, the user explores potential vulnerabilities like SUID permissions and references resources like GTFOBins to escalate privileges.
+
+---
+
+## 3) Pickle Rick
+
+- **Step 1:  Get connected**
+
+We need to connect to the TryHackMe network and deploy the machine to gain access to it.
+
+To connect to THM network, you need to download the OpenVPN GUI open-source application and import your VPN configuration file.
+
+Connecting with ``Linux``:
+
+1. Download OpenVPN by running the following command in your terminal:
+
+	```bash
+	sudo apt install openvpn
+	```
+
+2. Locate the full path to your VPN configuration file (download from the [access](https://tryhackme.com/r/access) page), normally in your Downloads folder.
+
+3. Use your OpenVPN file with the following command: 
+ 
+	```bash
+	sudo openvpn /path-to-file/file-name.ovpn
+	```
+
+4. If you see the "Initialization successfully completed" that's it! You should be successfully connected.
+
+
+	![setup](images/vpn2.png)
+
+- **Step 2:  Start the machine**
+
+Start the machine to get the ip.
+
+![setup](images/ip2.png)
+
+- **Step 3: Scanning the target NMAP**
+
+1. Let's use Nmap to see how many ports are open and what protocols are running on them.
+
+	```bash
+	sudo nmap -sS -sV <target-IP>
+	```
+	`sudo` : Nmap requires root privileges to perform some advanced scans.
+
+	`-sS` : Performs a TCP SYN scan, which is less detectable.
+
+	`-sV` : Detects service versions running on the open ports.
+
+	![setup](images/nmap2.png)
+
+	Port 80 is open, and you can access the server by entering the server's IP address in your browser's address bar. This allows you to view the content served on port 80.
+	![main pge](images/main_page.png)
+
+	If you open the browser's developer tools `Inspect`, go to the `Sources` tab, and then select `index`, you will be able to see a hint where the user's name is written.
+	![alt text](images/sources.png)
+
+- **Step 4:  Scanning the target GoBuster**
+
+	`Gobuster`: Gobuster is a command-line tool used for brute-forcing URLs and directories on websites, as well as DNS subdomains. It helps security analysts discover hidden content by testing a list of possible names quickly.
+
+	```bash
+	sudo apt install gobuster
+	```
+
+	`Dirb`: Dirb is a web content scanner that searches for hidden directories and files on a web server by brute-forcing a wordlist. It helps identify potential entry points for further security testing.
+
+	```bash
+	sudo apt install dirb
+	```
+
+	```bash
+	gobuster dir -u http://10.10.8.139/ -w /usr/share/wordlists/dirb/big.txt -t 1000 2>/dev/null
+	```
+	`-u` 10.10.31.142: Specifies the target IP address.
+
+	`-w` /usr/share/dirb/wordlists/small.txt: Uses a wordlist (small.txt) from Dirb’s collection to test for hidden directories.
+
+	`-t` Number of concurrent threads (default 10).
+
+	`2>/dev/null` Redirects error output to /dev/null, discarding it.
+
+	![gobuster](images/gobuster2.png)
+
+	As we can see, we have a `robot.txt` file that we can read using `curl`.
+	```bash
+	curl http://<target ip>/robot.txt
+	```
+	We can view the content of the file, which might contain the server's password. We can retrieve it using curl.
+	![curl](images/curl.png)
+
+	Additionally, there is an `assets` directory where we can view files used on the website. While this doesn't provide us with any immediate useful information, we will check the guide and discover that we have `portal.php` :)
+
+	A login page is displayed, where we can enter the credentials we have already found:
+
+	- Username: `R1ckRul3s`
+	- Password: `Wubbalubbadubdub`
+
+	![login page](images/login.png)
+
+	A command panel appears, and we can try running the `ls` command.
+	![command panel](images/command_panel.png)
+
+	As we can see, the `ls` command works. Now, let's try viewing the content of a `Sup3rS3cretPickl3Ingred.txt` using the `cat` command.
+	![command disable](images/command_disable.png)
+
+	The `cat` command is disabled, but after trying several methods to read the file (such as `head`, `tail`, and others), we discover that we can read the file using the `less` command.
+	![first flag](images/first_flag.png)
+	Congratulations! We have found the first flag: `mr. meeseek hair`
+	
+	Using the `sudo -l` command, we check our privileges. As we can see(`(ALL) NOPASSWD: ALL`), we are able to use `sudo` without a password.
+	![sudo](images/sudo.png)
+
+	Using the `sudo` command, we can view the second and third flags with the following commands:
+
+	- `sudo less ../../../home/rick/second\ ingredients`
+	- `sudo less ../../../root/3rd.txt`
+
+	These commands allow us to read the second and third flags.
+
+	- Second Flag: `1 jerry tear`
+	![second flag](images/second_flag.png)
+	- Third Flag: `fleeb juice`
+	![third flag](images/third_flag.png)
