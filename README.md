@@ -43,7 +43,7 @@ This payload exploits improper handling of user input in SQL queries, forcing th
 - Validate and sanitize input to ensure it does not alter the intended SQL logic.
 - Implement proper error handling to avoid revealing system information.
 
-![SQL Injection Example](./images/image.png)
+![SQL Injection Example](./images/login_page.png)
 
 After exploiting this vulnerability, we successfully gain access to the admin account.
 
