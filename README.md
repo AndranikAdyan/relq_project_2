@@ -13,6 +13,8 @@
 
 ### [3. Pickle Rick](#3-pickle-rick-1)
 
+### [4. Nmap](#4-nmap-1)
+
 ---
 
 ## 1) OWASP Juice Shop Vulnerabilities
@@ -339,18 +341,6 @@ python -c 'print(open("file_to_read").read())'
 
 ![alt text](images/r.png)
 
-
-## Conclusion
-
-
-This Root Me CTF walkthrough offers a step-by-step guide for beginners to engage with TryHackMe’s machine, starting from connecting to the network via OpenVPN to performing tasks such as scanning with Nmap, brute-forcing directories with GoBuster, and uploading a reverse shell for remote access.
-
-- `VPN Connection`: Users connect to the TryHackMe network using OpenVPN, ensuring they can access the target machine securely.
-
-- `Scanning with Nmap and GoBuster`: These tools help identify open ports, services, and potential hidden directories on the target system.
-- `Reverse Shell Setup`: After uploading a reverse shell PHP script, the user listens for incoming connections using Netcat on their VPN IP.
-- `Privilege Escalation`: Once inside the shell, the user explores potential vulnerabilities like SUID permissions and references resources like GTFOBins to escalate privileges.
-
 ---
 
 ## 3) Pickle Rick
@@ -476,3 +466,216 @@ Start the machine to get the ip.
 	![second flag](images/second_flag.png)
 	- Third Flag: `fleeb juice`
 	![third flag](images/third_flag.png)
+
+## 4) Nmap
+
+### **1. Overview**
+This project implements a custom network scanner similar to Nmap. The tool can scan TCP, UDP, and SYN ports of a target host, identifying which ports are open or closed.  
+
+Supported scanning types:
+- **TCP Connect Scan (`-sT`)** — Establishes a full TCP connection to check if the port is open.  
+- **SYN Scan (`-sS`)** — Sends a SYN packet to the target port and waits for a response (stealthier than TCP Connect).  
+- **UDP Scan (`-sU`)** — Sends a UDP packet to the target port and checks for a response.  
+
+---
+
+### **2. Usage**
+The script can be executed using:  
+```bash
+./nmap.py [-sT] [-sS] [-sU] [-p <ports>] <host>
+```
+
+#### **Options**
+| **Option** | **Description** |
+|------------|-----------------|
+| `-sT`      | Perform a TCP connect scan |
+| `-sS`      | Perform a TCP SYN scan |
+| `-sU`      | Perform a UDP scan |
+| `-p`       | Specify a port range (e.g., `-p 80`, `-p 1-1000`, `-p 22,80,443`, or `-p -` to scan all ports) |
+| `host`     | The target host (IP address or hostname) |
+
+> **Note:** TCP SYN scan (`-sS`) requires elevated privileges (root or sudo) to create raw sockets.
+
+---
+
+### **3. Code Explanation**
+
+#### **Main Script**
+The main script is responsible for parsing arguments, choosing the scan type (TCP, UDP, or SYN), and displaying the scan results.  
+```python
+#!/usr/bin/env python3
+
+import argparse
+import parser
+import connections
+import utils
+
+def main():
+	start = utils.datetime.now()
+	args_parser = argparse.ArgumentParser()
+	args = parser.parse_args(args_parser)
+	udp_open_ports = 0
+	tcp_open_ports = 0
+	tcp_scan = []
+	udp_scan = []
+
+	utils.print_info(args["host"])
+
+	if args["sT"]:
+		tcp_open_ports, tcp_scan = connections.check_tcp_connection(args["host"], args["p"])
+	elif args["sS"]:
+		tcp_open_ports, tcp_scan = connections.check_syn_connection(args["host"], args["p"])
+	if args["sU"]:
+		udp_open_ports, udp_scan = connections.check_udp_connection(args["host"], args["p"])
+
+	utils.print_connections(tcp_scan, udp_scan, args, tcp_open_ports, udp_open_ports)
+	total_time = (utils.datetime.now() - start).total_seconds()
+	print(f"Nmap done: 1 IP address (1 host up) scanned in {total_time:.2f}s")
+
+if __name__ == "__main__":
+	main()
+```
+
+---
+
+### **4. Functions Overview**
+
+#### **1. TCP Connect Scan**
+```python
+import socket
+import utils
+
+def check_tcp_connection(host: str, ports: list[int]) -> tuple[int, list[str]]:
+	tcp_arr = []
+	open_ports = 0
+	for port in ports:
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.settimeout(0.5)
+		result = sock.connect_ex((host, port))
+		if result == 0:
+			service = utils.get_service(port, "tcp")
+			tcp_arr.append(f"{port}/tcp\topen\t{service}")
+			open_ports += 1
+		elif len(ports) <= 26:
+			service = utils.get_service(port, "tcp")
+			tcp_arr.append(f"{port}/tcp\tclose\t{service}")
+		sock.close()
+	return open_ports, tcp_arr
+```
+
+#### **How TCP Scan Works**
+1. **Socket Creation**: It creates a TCP socket for each port in the specified range.  
+2. **Connection Attempt**: It tries to connect to the target host on the given port using `connect_ex()`.  
+3. **Port Status Check**: 
+   - If the connection is successful (`result == 0`), the port is marked as **open**.  
+   - Otherwise, the port is marked as **closed**.  
+4. **Service Detection**: If available, the script identifies the service running on the port (like **http** for port 80).  
+
+---
+
+#### **2. UDP Scan**
+```python
+import socket
+import utils
+
+def check_udp_connection(host: str, ports: list[int]) -> tuple[int, list[str]]:
+	open_ports = 0
+	udp_arr = []
+	with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+		for port in ports:
+			sock.settimeout(0.5)
+			sock.sendto(b"", (host, port))
+			try:
+				sock.recvfrom(1024)
+				service = utils.get_service(port, "udp")
+				udp_arr.append(f"{port}/udp\topen\t{service}")
+				open_ports += 1
+			except Exception:
+				if len(ports) <= 26:
+					service = utils.get_service(port, "udp")
+					udp_arr.append(f"{port}/udp\tclose\t{service}")
+	return open_ports, udp_arr
+```
+
+#### **How UDP Scan Works**
+1. **Socket Creation**: It creates a UDP socket for the specified ports.  
+2. **Packet Send**: A UDP packet is sent to the port using `sendto()`.  
+3. **Port Status Check**: 
+   - If no response is received within 0.5 seconds, it assumes the port is **closed**.  
+   - If a response is received, the port is considered **open**.  
+4. **Service Detection**: If available, the script identifies the service running on the port (like **dns** for port 53).  
+
+---
+
+#### **3. TCP SYN Scan**
+```python
+from scapy.all import IP, TCP, sr1, send, conf
+
+def check_syn_connection(host: str, ports: list[int]) -> tuple[int, list[str]]:
+	try:
+		conf.verb = 0
+		open_ports = 0
+		syn_arr = []
+		ip_layer = IP(dst=host)
+		for port in ports:
+			tcp_syn = TCP(dport=port, flags='S')
+			syn_packet = ip_layer / tcp_syn
+
+			response = sr1(syn_packet, timeout=0.5)
+			if response and response[TCP].flags == "SA" and response.haslayer(TCP):
+				open_ports += 1
+				service = utils.get_service(port, "tcp")
+				syn_arr.append(f"{port}/tcp\topen\t{service}")
+
+				tcp_rst = TCP(dport=port, sport=response[TCP].sport, flags="R")
+				rst_packet = ip_layer / tcp_rst
+				send(rst_packet)
+			elif len(ports) <= 26:
+				service = utils.get_service(port, "tcp")
+				syn_arr.append(f"{port}/tcp\tclose\t{service}")
+		return open_ports, syn_arr
+	except PermissionError:
+		print("\nOperation not permitted. Please run as root or with appropriate permissions.")
+		exit(1)
+```
+
+#### **How SYN Scan Works**
+1. **Packet Creation**: Uses Scapy to send raw SYN packets to the target port.  
+2. **Response Check**: 
+   - If a **SYN/ACK** is received, it means the port is **open**.  
+   - If no response or a **RST** packet is received, it assumes the port is **closed**.  
+3. **Port Status Update**: The result is printed as **open** or **closed**.  
+4. **Stealth**: Unlike TCP Connect, a full connection is not established, making this scan stealthier.  
+
+---
+
+### **5. Example Usage**
+
+#### **1. TCP Scan**
+```bash
+./nmap.py -sT -p 22 scanme.nmap.org
+```
+
+#### **2. SYN Scan**
+```bash
+sudo ./nmap.py -sS -p 1-100 scanme.nmap.org
+```
+
+#### **3. UDP Scan**
+```bash
+./nmap.py -sU -p 53,67,123 scanme.nmap.org
+```
+
+#### **4. Full Scan (All Ports)**
+```bash
+./nmap.py -sT -p - scanme.nmap.org
+```
+
+---
+
+### **6. Notes**
+- **Permissions**: SYN scan (`-sS`) requires `sudo` or root permissions.  
+- **Speed**: Scanning large port ranges can take a long time.  
+- **Multi-threading**: The script processes ports sequentially, but it could be improved with multi-threading.  
+
+If you'd like more explanation of any part of the code or features, let me know.
